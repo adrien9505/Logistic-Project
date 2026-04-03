@@ -1,1 +1,8 @@
 Just a list of new ideas to integrate into the app
+
+1 Ajout d'un bouton pour modifier les informations d'un producteur, d'un point de massification, d'une restauration collective...
+2 Ajout de l'option de suppression d'un élément (producteur, point de massification, restauration collective
+3 Ajout d'une option ou le producteur n'a pas besoin de déposer ces produits sur un point de massification si l'itinéraire de livraison pas à proximité de son exploitation avant d'arriver au lieu de livraison
+4 Ajout de la possibilité de modifier le poids ou la quantité de produit livré par un producteur seon l'itinéraire que l'on simule
+5 Ajout de la possibilité de préciser à quelle restauration collective est destiné les produits de chaque producteur, les produits peuvent être livrés à une seule restauration collective ou plusieurs
+6 Ajout de l'information du nombre de kilomètre et des émissions de GES évitées si chaque producteur étaient allé livrer chaque restauration collective qui avec commandé ses produits
