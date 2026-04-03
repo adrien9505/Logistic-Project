@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Pause Paysanne — Logistique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g50:#EAF3DE;--g100:#C0DD97;--g200:#97C459;--g400:#639922;--g600:#3B6D11;--g800:#27500A;
+  --a50:#FAEEDA;--a100:#FAC775;--a400:#BA7517;--a600:#854F0B;--a800:#633806;
+  --t50:#E1F5EE;--t100:#9FE1CB;--t400:#1D9E75;--t600:#0F6E56;--t800:#085041;
+  --c400:#D85A30;--c600:#993C1D;
+  --gr50:#F1EFE8;--gr100:#D3D1C7;--gr200:#B4B2A9;--gr400:#888780;--gr600:#5F5E5A;--gr800:#444441;
+  --b50:#E6F1FB;--b200:#85B7EB;--b400:#378ADD;--b600:#185FA5;--b800:#0C447C;
+  --p50:#EEEDFE;--p400:#7F77DD;--p600:#534AB7;--p800:#3C3489;
+  --r400:#E24B4A;--r600:#A32D2D;
+  --bg:#FAFAF7;--sur:#FFF;--tx:#1A1A17;--mu:#6B6B66;--bd:rgba(0,0,0,.1);
+  --rad:10px;--radlg:16px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;min-height:100vh}
+header{background:var(--g800);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000}
+.logo{display:flex;align-items:center;gap:9px;font-family:'DM Serif Display',serif;color:var(--g50);font-size:1.1rem}
+.logo-icon{width:28px;height:28px;background:var(--g400);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.badge{background:var(--g400);color:var(--g50);font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+.app{display:grid;grid-template-columns:400px 1fr;flex:1;height:calc(100vh - 56px);overflow:hidden}
+.sidebar{background:var(--sur);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.mbar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:9px 10px;border-bottom:1px solid var(--bd)}
+.mc{background:var(--bg);border-radius:var(--rad);padding:7px 8px;text-align:center}
+.mv{font-size:19px;font-weight:600;color:var(--g600);display:block;font-family:'DM Serif Display',serif}
+.ml{font-size:10px;color:var(--mu)}
+.stabs{display:flex;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{height:0}
+.tbtn{flex:1;padding:10px 4px;font-size:11px;font-weight:500;color:var(--mu);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;min-width:0}
+.tbtn.active{color:var(--g600);border-bottom-color:var(--g400)}
+.tbtn:hover:not(.active){color:var(--tx)}
+.tpanel{display:none;flex:1;overflow-y:auto;padding:10px;flex-direction:column;gap:9px}
+.tpanel.active{display:flex}
+.ecard{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rad);padding:9px 11px;transition:all .15s}
+.ecard.at{border-color:var(--g400);background:var(--g50)}
+.ecard.it{opacity:.42}
+.ehddr{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.edot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ename{font-weight:500;font-size:13px;flex:1}
+.ebdg{font-size:10px;font-weight:500;padding:2px 6px;border-radius:20px}
+.bp{background:var(--g50);color:var(--g800)}
+.bc{background:var(--b50);color:var(--b800)}
+.bh{background:var(--a50);color:var(--a800)}
+.esub{font-size:11px;color:var(--mu);margin-left:15px}
+.cfoot{display:flex;justify-content:space-between;align-items:center;margin-top:5px;padding-top:5px;border-top:1px solid var(--bd)}
+.ms{font-size:10px;color:var(--mu)}
+.cbw{display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 6px;border-radius:5px;transition:background .12s;user-select:none}
+.cbw:hover{background:rgba(0,0,0,.05)}
+.cbx{width:14px;height:14px;border:1.5px solid var(--gr200);border-radius:3px;background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;font-size:9px;font-weight:700;color:white}
+.cbx.chk{background:var(--g600);border-color:var(--g600)}
+.cbl{font-size:10px;color:var(--mu);white-space:nowrap}
+.sarow{display:flex;gap:5px}
+.bsel{font-size:10px;padding:3px 7px;border:1px solid var(--bd);border-radius:5px;background:none;cursor:pointer;color:var(--mu);font-family:'DM Sans',sans-serif}
+.bsel:hover{background:var(--bg);color:var(--tx)}
+.infob{background:var(--t50);border:1px solid var(--t100);border-radius:7px;padding:6px 9px;font-size:11px;color:var(--t800)}
+.otitle{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px}
+.orow{display:flex;gap:7px;align-items:center}
+.olbl{font-size:12px;color:var(--mu);flex:1}
+.osel{font-size:12px;padding:5px 7px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx)}
+.bopt{width:100%;padding:11px;background:var(--g600);color:white;border:none;border-radius:var(--rad);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Serif Display',serif;transition:background .15s}
+.bopt:hover{background:var(--g800)}
+.bopt:disabled{background:var(--gr200);cursor:not-allowed}
+.badd{padding:7px 10px;background:none;color:var(--g600);border:1px dashed var(--g400);border-radius:var(--rad);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;width:100%;text-align:center}
+.badd:hover{background:var(--g50)}
+.rres{display:none;flex-direction:column;gap:7px}
+.rres.show{display:flex}
+.rstep{display:flex;align-items:flex-start;gap:7px;font-size:12px}
+.snum{width:19px;height:19px;border-radius:50%;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sd{background:var(--g600)}.sh{background:var(--a400)}.sc{background:var(--b600)}
+.splace{font-weight:500;font-size:12px}
+.sact{color:var(--mu);font-size:10px}
+.sprod{font-size:10px;color:var(--g600);font-style:italic;margin-top:1px}
+.rsumm{background:var(--g50);border:1px solid var(--g100);border-radius:var(--rad);padding:9px;display:flex;justify-content:space-around}
+.rsi{text-align:center}
+.rsv{font-size:14px;font-weight:600;color:var(--g600)}
+.rsk{font-size:10px;color:var(--mu)}
+.vtog{display:flex;background:var(--bg);border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.vtb{flex:1;padding:6px 8px;font-size:11px;font-weight:500;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--mu);transition:all .15s}
+.vtb.active{background:var(--g600);color:white}
+.exprow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.exb{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 5px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--tx);transition:all .15s;text-decoration:none}
+.exb:hover{border-color:var(--g400);background:var(--g50)}
+.exb.full{grid-column:1/-1}
+.bsave{width:100%;padding:9px;background:var(--p600);color:white;border:none;border-radius:var(--rad);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.bsave:hover{background:var(--p800)}
+.scrd{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rad);padding:10px 12px}
+.schdr{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.scname{font-weight:500;font-size:13px;flex:1;outline:none;border:none;background:none;font-family:'DM Sans',sans-serif;color:var(--tx);border-bottom:1px solid transparent;transition:border-color .15s}
+.scname:focus{border-bottom-color:var(--g400)}
+.scmeta{font-size:11px;color:var(--mu)}
+.scacts{display:flex;gap:5px;margin-top:6px}
+.scab{padding:4px 9px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid var(--bd);background:none;color:var(--mu);transition:all .12s}
+.scab:hover{background:var(--bg);color:var(--tx)}
+.scab.del{color:var(--r600);border-color:var(--r400)}
+.scab.del:hover{background:#fef2f2}
+#map{width:100%;height:100%;background:#d4e8c2}
+.mleg{position:absolute;bottom:16px;right:10px;background:white;border:1px solid var(--bd);border-radius:var(--rad);padding:9px 12px;font-size:11px;z-index:900;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:4px}
+.li{display:flex;align-items:center;gap:6px;color:var(--mu)}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lln{width:18px;height:0;border-top:2px dashed #639922;flex-shrink:0}
+.lls{width:18px;height:3px;background:#D85A30;border-radius:2px;flex-shrink:0}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2000;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--sur);border-radius:var(--radlg);width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden}
+.mhdr{background:var(--g800);padding:.95rem 1.4rem;display:flex;justify-content:space-between;align-items:center}
+.mtitle{font-family:'DM Serif Display',serif;color:var(--g50);font-size:1rem}
+.mcls{background:none;border:none;color:var(--g100);font-size:18px;cursor:pointer}
+.mbdy{padding:1.2rem;display:flex;flex-direction:column;gap:11px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:12px;font-weight:500;color:var(--mu)}
+.fi{padding:8px 10px;border:1px solid var(--bd);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);outline:none;width:100%}
+.fi:focus{border-color:var(--g400)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.bpri{padding:10px;background:var(--g600);color:white;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.bpri:hover{background:var(--g800)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--g800);color:var(--g50);padding:8px 16px;border-radius:100px;font-size:12px;font-weight:500;z-index:9999;transition:transform .3s ease;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--gr100);border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-icon">🌿</div>La Pause Paysanne — Vire</div>
+  <span class="badge">Normandie</span>
+</header>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="mbar">
+    <div class="mc"><span class="mv" id="mp">0</span><div class="ml">Prod. actifs</div></div>
+    <div class="mc"><span class="mv" id="mc">0</span><div class="ml">Cantines actives</div></div>
+    <div class="mc"><span class="mv" id="mh">0</span><div class="ml">Points relais</div></div>
+  </div>
+  <div class="stabs">
+    <button class="tbtn active" onclick="switchTab('prod')">Producteurs</button>
+    <button class="tbtn" onclick="switchTab('cant')">Cantines</button>
+    <button class="tbtn" onclick="switchTab('hubs')">Relais</button>
+    <button class="tbtn" onclick="switchTab('tour')">Tournée</button>
+    <button class="tbtn" onclick="switchTab('saved')">Mes itinéraires</button>
+  </div>
+
+  <div class="tpanel active" id="tab-prod">
+    <div class="infob">💡 Cochez les producteurs concernés par cette tournée</div>
+    <div class="sarow"><button class="bsel" onclick="selAll('p',true)">Tout cocher</button><button class="bsel" onclick="selAll('p',false)">Tout décocher</button></div>
+    <div id="prod-list"></div>
+    <button class="badd" onclick="openModal('p')">+ Ajouter un producteur</button>
+  </div>
+
+  <div class="tpanel" id="tab-cant">
+    <div class="infob">💡 Cochez les cantines à livrer lors de cette tournée</div>
+    <div class="sarow"><button class="bsel" onclick="selAll('c',true)">Tout cocher</button><button class="bsel" onclick="selAll('c',false)">Tout décocher</button></div>
+    <div id="cant-list"></div>
+    <button class="badd" onclick="openModal('c')">+ Ajouter une cantine</button>
+  </div>
+
+  <div class="tpanel" id="tab-hubs">
+    <div class="infob">🏭 Points de massification disponibles pour toutes les tournées</div>
+    <div id="hubs-list"></div>
+    <button class="badd" onclick="openModal('h')">+ Ajouter un point relais</button>
+  </div>
+
+  <div class="tpanel" id="tab-tour">
+    <div class="otitle">⚙️ Paramètres de la tournée</div>
+    <div class="orow">
+      <span class="olbl">Points de massification</span>
+      <select class="osel" id="nb-hubs">
+        <option value="auto" selected>🤖 Automatique</option>
+        <option value="1">1 point</option>
+        <option value="2">2 points</option>
+        <option value="3">3 points</option>
+      </select>
+    </div>
+    <div class="orow">
+      <span class="olbl">Affichage des routes</span>
+      <div class="vtog">
+        <button class="vtb active" id="vt-real" onclick="setViewMode('real')">🛣️ Réel</button>
+        <button class="vtb" id="vt-schema" onclick="setViewMode('schema')">📐 Schéma</button>
+      </div>
+    </div>
+    <button class="bopt" id="btn-calc" onclick="runOptimization()">🗺️ Calculer la tournée</button>
+    <div class="rres" id="rres">
+      <div class="otitle">📍 Itinéraire optimisé</div>
+      <div id="rsteps" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="rsumm" id="rsumm"></div>
+      <div class="otitle" style="margin-top:2px">📤 Exporter / Naviguer</div>
+      <div class="exprow" id="exprow"></div>
+      <button class="bsave" onclick="saveCurrentRoute()">💾 Sauvegarder cet itinéraire</button>
+    </div>
+  </div>
+
+  <div class="tpanel" id="tab-saved">
+    <div class="infob">📂 Cliquez sur le nom d'un itinéraire pour le renommer.</div>
+    <div id="saved-list"></div>
+    <div id="saved-empty" style="font-size:12px;color:var(--mu);text-align:center;padding:2rem 0.5rem">Aucun itinéraire sauvegardé pour l'instant.<br>Calculez et sauvegardez une tournée.</div>
+  </div>
+</aside>
+
+<div style="position:relative;overflow:hidden">
+  <div id="map"></div>
+  <div class="mleg">
+    <div style="font-size:11px;font-weight:600;margin-bottom:2px;color:#1A1A17">Légende</div>
+    <div class="li"><div class="ldot" style="background:#3B6D11"></div>Producteur actif</div>
+    <div class="li"><div class="ldot" style="background:#B4B2A9;border:1.5px dashed #888;box-sizing:border-box"></div>Inactif</div>
+    <div class="li"><div class="ldot" style="background:#185FA5"></div>Cantine active</div>
+    <div class="li"><div class="ldot" style="background:#BA7517"></div>Point relais</div>
+    <div class="li"><div class="lln"></div>Prod. → Relais</div>
+    <div class="li"><div class="lls"></div>Tournée camion</div>
+  </div>
+</div>
+</div>
+
+<div class="modal-ov" id="modal">
+  <div class="modal">
+    <div class="mhdr"><span class="mtitle" id="mtitle">Ajouter</span><button class="mcls" onclick="closeModal()">✕</button></div>
+    <div class="mbdy" id="mbdy"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DEPOT={name:"Dépôt La Pause Paysanne",lat:48.8397,lng:-0.8897,type:'depot'};
+const state={
+  producers:[
+    {id:1,name:"Ferme du Perrey",lat:48.88,lng:-0.92,products:"Cidre, Pommes",volume:110,active:true},
+    {id:2,name:"GAEC des Hauts Vents",lat:48.80,lng:-0.95,products:"Fromages, Beurre",volume:85,active:true},
+    {id:3,name:"Maraîchage Le Moigne",lat:48.87,lng:-0.82,products:"Légumes, Salades",volume:95,active:false},
+    {id:4,name:"Élevage Lehéricy",lat:48.76,lng:-0.86,products:"Agneau, Porc",volume:70,active:true},
+    {id:5,name:"Vergers Bourgeois",lat:48.91,lng:-0.78,products:"Poires, Cerises",volume:50,active:true},
+  ],
+  canteens:[
+    {id:1,name:"Collège Victor Hugo",lat:48.843,lng:-0.891,meals:520,address:"Vire",active:true},
+    {id:2,name:"École Primaire Ste-Marie",lat:48.836,lng:-0.883,meals:220,address:"Vire",active:true},
+    {id:3,name:"Lycée Lebrun",lat:48.847,lng:-0.896,meals:680,address:"Vire",active:false},
+    {id:4,name:"EHPAD Les Genêts",lat:48.839,lng:-0.875,meals:110,address:"Vire",active:true},
+    {id:5,name:"Cantine Municipale",lat:48.832,lng:-0.902,meals:300,address:"Vire",active:true},
+  ],
+  hubs:[
+    {id:1,name:"Hangar Coopératif Vire",lat:48.852,lng:-0.905,capacity:2500,temp:"0-4°C"},
+    {id:2,name:"Plateforme Agri Sud Calvados",lat:48.822,lng:-0.871,capacity:3000,temp:"-2–8°C"},
+    {id:3,name:"Entrepôt Bocage Ouest",lat:48.868,lng:-0.848,capacity:1800,temp:"2-6°C"},
+  ],
+  route:null,hubAssignments:{},savedRoutes:[],viewMode:'real',
+};
+let nextId={p:20,c:20,h:20},currentModal=null,map,prodLayer,truckLayer,allMarkers=[],savedCount=0,realGeoJSON=null;
+
+function initMap(){
+  map=L.map('map').setView([48.843,-0.889],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map);
+  prodLayer=L.layerGroup().addTo(map);
+  truckLayer=L.layerGroup().addTo(map);
+  refreshMap();
+}
+
+function mkIcon(color,emoji,inactive){
+  if(inactive)return L.divIcon({className:'',html:`<div style="width:28px;height:28px;background:white;border:2px dashed #B4B2A9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.42;box-shadow:0 1px 3px rgba(0,0,0,.1);">${emoji}</div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-15]});
+  return L.divIcon({className:'',html:`<div style="width:30px;height:30px;background:${color};border:2.5px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 5px rgba(0,0,0,.2);">${emoji}</div>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-17]});
+}
+
+function refreshMap(){
+  allMarkers.forEach(m=>m.remove());allMarkers=[];
+  prodLayer.clearLayers();truckLayer.clearLayers();
+  state.producers.forEach(p=>{
+    const m=L.marker([p.lat,p.lng],{icon:mkIcon('#3B6D11','🌱',!p.active)}).addTo(map).bindPopup(`<b>${p.name}</b><br><small>${p.products}</small><br>Volume: <b>${p.volume} kg/sem</b><br><em style="color:${p.active?'#3B6D11':'#888'}">${p.active?'✅ Inclus':'⬜ Non inclus'}</em>`);
+    allMarkers.push(m);
+  });
+  state.canteens.forEach(c=>{
+    const m=L.marker([c.lat,c.lng],{icon:mkIcon('#185FA5','🏫',!c.active)}).addTo(map).bindPopup(`<b>${c.name}</b><br>${c.address}<br>Repas/j: <b>${c.meals}</b><br><em style="color:${c.active?'#185FA5':'#888'}">${c.active?'✅ Incluse':'⬜ Non incluse'}</em>`);
+    allMarkers.push(m);
+  });
+  state.hubs.forEach(h=>{
+    const m=L.marker([h.lat,h.lng],{icon:mkIcon('#BA7517','🏭',false)}).addTo(map).bindPopup(`<b>${h.name}</b><br>Capacité: <b>${h.capacity} kg</b> — ${h.temp}`);
+    allMarkers.push(m);
+  });
+  if(Object.keys(state.hubAssignments).length){
+    Object.entries(state.hubAssignments).forEach(([hid,prods])=>{
+      const hub=state.hubs.find(h=>h.id===parseInt(hid));if(!hub)return;
+      prods.forEach(p=>L.polyline([[p.lat,p.lng],[hub.lat,hub.lng]],{color:'#639922',weight:2,opacity:.65,dashArray:'5 4'}).addTo(prodLayer));
+    });
+  }
+  if(state.route){
+    if(state.viewMode==='real'&&realGeoJSON)drawReal();
+    else drawSchema();
+  }
+  updateMetrics();
+}
+
+function drawSchema(){
+  truckLayer.clearLayers();
+  if(!state.route)return;
+  L.polyline(state.route.map(s=>[s.lat,s.lng]),{color:'#D85A30',weight:4,opacity:.85,dashArray:'9 5'}).addTo(truckLayer);
+  drawNums();
+}
+function drawReal(){
+  truckLayer.clearLayers();
+  if(realGeoJSON)L.geoJSON(realGeoJSON,{style:{color:'#D85A30',weight:4,opacity:.88}}).addTo(truckLayer);
+  drawNums();
+}
+function drawNums(){
+  if(!state.route)return;
+  const cols={depot:'#3B6D11',hub:'#BA7517',canteen:'#185FA5'};
+  state.route.forEach((s,i)=>{
+    L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<div style="width:20px;height:20px;background:${cols[s.type]||'#888'};color:white;border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.25);">${i+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).addTo(truckLayer);
+  });
+}
+
+function setViewMode(m){
+  state.viewMode=m;
+  document.getElementById('vt-real').classList.toggle('active',m==='real');
+  document.getElementById('vt-schema').classList.toggle('active',m==='schema');
+  if(state.route){if(m==='real'&&realGeoJSON)drawReal();else drawSchema();}
+}
+
+function dist(a,b){const dl=(a.lat-b.lat)*111,dn=(a.lng-b.lng)*111*Math.cos(a.lat*Math.PI/180);return Math.sqrt(dl*dl+dn*dn)}
+
+function autoHubs(ap){return Math.min(Math.max(1,Math.round(ap.length/3)),state.hubs.length)}
+
+async function fetchRoute(waypoints){
+  const url=`https://router.project-osrm.org/route/v1/driving/${waypoints.map(w=>w.lng+','+w.lat).join(';')}?overview=full&geometries=geojson`;
+  try{
+    const r=await fetch(url);if(!r.ok)return null;
+    const d=await r.json();
+    if(d.code==='Ok'&&d.routes.length)return{geojson:d.routes[0].geometry,km:Math.round(d.routes[0].distance/100)/10,min:Math.round(d.routes[0].duration/60)};
+  }catch(e){}
+  return null;
+}
+
+async function runOptimization(){
+  const ap=state.producers.filter(p=>p.active),ac=state.canteens.filter(c=>c.active);
+  if(!ap.length){showToast('Aucun producteur sélectionné');switchTab('prod');return}
+  if(!ac.length){showToast('Aucune cantine sélectionnée');switchTab('cant');return}
+  if(!state.hubs.length){showToast('Ajoutez au moins un point relais');return}
+  const btn=document.getElementById('btn-calc');
+  btn.disabled=true;btn.innerHTML='<div style="display:flex;align-items:center;justify-content:center;gap:8px"><div class="spin"></div>Calcul en cours…</div>';
+  const nbStr=document.getElementById('nb-hubs').value;
+  const nbH=nbStr==='auto'?autoHubs(ap):parseInt(nbStr);
+  const hscores=state.hubs.map(h=>({hub:h,score:ap.reduce((s,p)=>s+dist(h,p),0)+ac.reduce((s,c)=>s+dist(h,c),0)})).sort((a,b)=>a.score-b.score);
+  const selH=hscores.slice(0,Math.min(nbH,state.hubs.length)).map(x=>x.hub);
+  const asgn={};selH.forEach(h=>asgn[h.id]=[]);
+  ap.forEach(p=>{const n=selH.reduce((b,h)=>dist(p,h)<dist(p,b)?h:b,selH[0]);asgn[n.id].push(p)});
+  state.hubAssignments=asgn;
+  let rem=[...selH],ordH=[],cur=DEPOT;
+  while(rem.length){const nx=rem.reduce((b,h)=>dist(cur,h)<dist(cur,b)?h:b,rem[0]);ordH.push(nx);rem=rem.filter(h=>h.id!==nx.id);cur=nx}
+  let remC=[...ac],ordC=[];cur=ordH[ordH.length-1];
+  while(remC.length){const nx=remC.reduce((b,c)=>dist(cur,c)<dist(cur,b)?c:b,remC[0]);ordC.push(nx);remC=remC.filter(c=>c.id!==nx.id);cur=nx}
+  const route=[DEPOT,...ordH.map(h=>({...h,type:'hub'})),...ordC.map(c=>({...c,type:'canteen'})),DEPOT];
+  state.route=route;realGeoJSON=null;
+  let straight=0;for(let i=0;i<route.length-1;i++)straight+=dist(route[i],route[i+1]);
+  straight=Math.round(straight*10)/10;
+  const real=await fetchRoute(route.map(s=>({lat:s.lat,lng:s.lng})));
+  let dkm=straight,dmin=null;
+  if(real){realGeoJSON=real.geojson;dkm=real.km;dmin=real.min}
+  let pkm=0;ap.forEach(p=>{const h=selH.reduce((b,h)=>dist(p,h)<dist(p,b)?h:b,selH[0]);pkm+=dist(p,h)*2});
+  pkm=Math.round(pkm*10)/10;
+  refreshMap();
+  if(state.viewMode==='real'&&realGeoJSON)drawReal();else drawSchema();
+  const icons={depot:'🚛',hub:'🏭',canteen:'🏫'};
+  const acts={depot:'Départ / retour dépôt',hub:'Collecte – point de massification',canteen:'Livraison cantine'};
+  const sc={depot:'sd',hub:'sh',canteen:'sc'};
+  document.getElementById('rsteps').innerHTML=route.map((s,i)=>{
+    let ex='';if(s.type==='hub'&&asgn[s.id]?.length)ex=`<div class="sprod">↳ Apports : ${asgn[s.id].map(p=>p.name).join(', ')}</div>`;
+    return`<div class="rstep"><div class="snum ${sc[s.type]||''}">${i+1}</div><div><div class="splace">${icons[s.type]||'📍'} ${s.name}</div><div class="sact">${acts[s.type]||''}</div>${ex}</div></div>`;
+  }).join('');
+  const ts=dmin?`${Math.floor(dmin/60)}h${String(dmin%60).padStart(2,'0')}`:'—';
+  const al=nbStr==='auto'?` (auto: ${nbH})`:' ';
+  document.getElementById('rsumm').innerHTML=`<div class="rsi"><div class="rsv">${dkm} km</div><div class="rsk">Tournée${real?' réelle':' schéma'}</div></div><div class="rsi"><div class="rsv">${ts}</div><div class="rsk">Durée estimée</div></div><div class="rsi"><div class="rsv">${selH.length}${al}</div><div class="rsk">Relais</div></div>`;
+  buildExport(route,dkm,dmin);
+  document.getElementById('rres').classList.add('show');
+  btn.disabled=false;btn.innerHTML='🗺️ Recalculer la tournée';
+  switchTab('tour');
+  showToast(`✓ ${dkm} km — ${ap.length} prod. / ${ac.length} cantines`);
+}
+
+function buildExport(route,dkm,dmin){
+  const wp=route.map(s=>`${s.lat},${s.lng}`);
+  const go=encodeURIComponent(wp[0]),gd=encodeURIComponent(wp[wp.length-1]);
+  const gm=wp.slice(1,-1).map(w=>encodeURIComponent(w)).join('|');
+  const gmurl=`https://www.google.com/maps/dir/?api=1&origin=${go}&destination=${gd}&waypoints=${gm}&travelmode=driving`;
+  const fc=route.find(s=>s.type==='canteen');
+  const wazeurl=fc?`https://waze.com/ul?ll=${fc.lat},${fc.lng}&navigate=yes`:'#';
+  const gpx=buildGPX(route);
+  const gb=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
+  const txt=buildTxt(route,dkm,dmin);
+  const tb=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  document.getElementById('exprow').innerHTML=`
+    <a class="exb" href="${gmurl}" target="_blank">🗺️ Google Maps</a>
+    <a class="exb" href="${wazeurl}" target="_blank">🔵 Waze</a>
+    <a class="exb" href="${gb}" download="tournee.gpx">📥 Fichier GPX</a>
+    <a class="exb" href="${tb}" download="tournee.txt">📄 Export texte</a>`;
+}
+function buildGPX(r){
+  const pts=r.map((s,i)=>`  <wpt lat="${s.lat}" lon="${s.lng}"><name>${i+1}. ${s.name}</name></wpt>`).join('\n');
+  const tp=r.map(s=>`    <trkpt lat="${s.lat}" lon="${s.lng}"></trkpt>`).join('\n');
+  return`<?xml version="1.0"?>\n<gpx version="1.1" creator="La Pause Paysanne">\n${pts}\n  <trk><name>Tournée La Pause Paysanne</name><trkseg>\n${tp}\n  </trkseg></trk>\n</gpx>`;
+}
+function buildTxt(r,km,min){
+  const d=new Date().toLocaleDateString('fr-FR');
+  let t=`TOURNÉE LA PAUSE PAYSANNE — ${d}\n${'─'.repeat(40)}\n\n`;
+  r.forEach((s,i)=>{t+=`${i+1}. [${({depot:'Dépôt',hub:'Point relais',canteen:'Cantine'})[s.type]||'Étape'}] ${s.name}\n   ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}\n\n`});
+  t+=`${'─'.repeat(40)}\nDistance totale : ${km} km\n`;
+  if(min)t+=`Durée estimée : ${Math.floor(min/60)}h${String(min%60).padStart(2,'0')}\n`;
+  return t;
+}
+
+function saveCurrentRoute(){
+  if(!state.route){showToast('Aucun itinéraire à sauvegarder');return}
+  savedCount++;
+  const id='r'+Date.now();
+  state.savedRoutes.push({id,name:`Itinéraire ${savedCount}`,date:new Date().toLocaleDateString('fr-FR'),producers:state.producers.filter(p=>p.active).map(p=>p.name),canteens:state.canteens.filter(c=>c.active).map(c=>c.name),route:[...state.route],hubAssignments:{...state.hubAssignments}});
+  renderSaved();switchTab('saved');showToast(`💾 Itinéraire ${savedCount} sauvegardé`);
+}
+
+function renderSaved(){
+  const el=document.getElementById('saved-list');
+  const emp=document.getElementById('saved-empty');
+  if(!state.savedRoutes.length){el.innerHTML='';emp.style.display='block';return}
+  emp.style.display='none';
+  el.innerHTML=state.savedRoutes.map(r=>`
+    <div class="scrd">
+      <div class="schdr">
+        <span style="font-size:14px">📋</span>
+        <input class="scname" id="sn-${r.id}" value="${r.name}" onchange="renameR('${r.id}',this.value)" title="Cliquez pour renommer">
+        <span style="font-size:10px;color:var(--mu)">${r.date}</span>
+      </div>
+      <div class="scmeta">👨‍🌾 ${r.producers.join(', ')||'—'}</div>
+      <div class="scmeta" style="margin-top:2px">🏫 ${r.canteens.join(', ')||'—'}</div>
+      <div class="scacts">
+        <button class="scab" onclick="loadR('${r.id}')">🗺️ Charger</button>
+        <button class="scab del" onclick="delR('${r.id}')">Supprimer</button>
+      </div>
+    </div>`).join('');
+}
+
+function renameR(id,v){const r=state.savedRoutes.find(x=>x.id===id);if(r)r.name=v.trim()||r.name}
+function loadR(id){
+  const r=state.savedRoutes.find(x=>x.id===id);if(!r)return;
+  state.route=r.route;state.hubAssignments=r.hubAssignments;realGeoJSON=null;
+  refreshMap();drawSchema();showToast(`Itinéraire "${r.name}" chargé`);switchTab('tour');
+}
+function delR(id){state.savedRoutes=state.savedRoutes.filter(x=>x.id!==id);renderSaved();showToast('Itinéraire supprimé')}
+
+function renderAll(){renderProd();renderCant();renderHubs();updateMetrics()}
+function updateMetrics(){document.getElementById('mp').textContent=state.producers.filter(p=>p.active).length;document.getElementById('mc').textContent=state.canteens.filter(c=>c.active).length;document.getElementById('mh').textContent=state.hubs.length}
+
+function renderProd(){document.getElementById('prod-list').innerHTML=state.producers.map(p=>`
+  <div class="ecard ${p.active?'at':'it'}">
+    <div class="ehddr"><div class="edot" style="background:${p.active?'#3B6D11':'#B4B2A9'}"></div><span class="ename">${p.name}</span><span class="ebdg bp">${p.volume} kg</span></div>
+    <div class="esub">${p.products}</div>
+    <div class="cfoot"><span class="ms">📍 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}</span>
+    <div class="cbw" onclick="toggleA('p',${p.id})"><div class="cbx ${p.active?'chk':''}">✓</div><span class="cbl">${p.active?'Dans la tournée':'Exclure'}</span></div></div>
+  </div>`).join('')}
+
+function renderCant(){document.getElementById('cant-list').innerHTML=state.canteens.map(c=>`
+  <div class="ecard ${c.active?'at':'it'}">
+    <div class="ehddr"><div class="edot" style="background:${c.active?'#185FA5':'#B4B2A9'}"></div><span class="ename">${c.name}</span><span class="ebdg bc">${c.meals} repas</span></div>
+    <div class="esub">${c.address}</div>
+    <div class="cfoot"><span class="ms">📍 ${c.lat.toFixed(3)}, ${c.lng.toFixed(3)}</span>
+    <div class="cbw" onclick="toggleA('c',${c.id})"><div class="cbx ${c.active?'chk':''}">✓</div><span class="cbl">${c.active?'Dans la tournée':'Exclure'}</span></div></div>
+  </div>`).join('')}
+
+function renderHubs(){document.getElementById('hubs-list').innerHTML=state.hubs.map(h=>`
+  <div class="ecard at">
+    <div class="ehddr"><div class="edot" style="background:#BA7517"></div><span class="ename">${h.name}</span><span class="ebdg bh">Relais</span></div>
+    <div class="cfoot"><span class="ms">Capacité: <b>${h.capacity} kg</b> — ${h.temp}</span></div>
+  </div>`).join('')}
+
+function toggleA(t,id){
+  if(t==='p'){const p=state.producers.find(x=>x.id===id);if(p)p.active=!p.active;renderProd()}
+  else{const c=state.canteens.find(x=>x.id===id);if(c)c.active=!c.active;renderCant()}
+  clearRoute();refreshMap();
+}
+function selAll(t,v){
+  if(t==='p'){state.producers.forEach(p=>p.active=v);renderProd()}
+  else{state.canteens.forEach(c=>c.active=v);renderCant()}
+  clearRoute();refreshMap();
+}
+function clearRoute(){state.route=null;state.hubAssignments={};realGeoJSON=null;document.getElementById('rres').classList.remove('show');updateMetrics()}
+
+function switchTab(n){
+  const ns=['prod','cant','hubs','tour','saved'];
+  document.querySelectorAll('.tbtn').forEach((b,i)=>b.classList.toggle('active',ns[i]===n));
+  document.querySelectorAll('.tpanel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+}
+
+function openModal(t){
+  currentModal=t;
+  document.getElementById('mtitle').textContent={p:'Ajouter un producteur',c:'Ajouter une cantine',h:'Ajouter un point relais'}[t];
+  let b='';
+  if(t==='p')b=`<div class="fg"><label class="fl">Nom de l'exploitation</label><input class="fi" id="fn" placeholder="ex. Ferme des Hautes Terres"></div><div class="fg"><label class="fl">Produits</label><input class="fi" id="fpr" placeholder="ex. Légumes, Fromages"></div><div class="fr"><div class="fg"><label class="fl">Volume (kg/sem)</label><input class="fi" id="fv" type="number" placeholder="100"></div><div class="fg"><label class="fl">Commune</label><input class="fi" id="fco" placeholder="Vire"></div></div><div class="fr"><div class="fg"><label class="fl">Latitude</label><input class="fi" id="flat" type="number" step="0.001" placeholder="48.84"></div><div class="fg"><label class="fl">Longitude</label><input class="fi" id="flng" type="number" step="0.001" placeholder="-0.89"></div></div><button class="bpri" onclick="saveEnt()">Enregistrer</button>`;
+  else if(t==='c')b=`<div class="fg"><label class="fl">Nom de l'établissement</label><input class="fi" id="fn" placeholder="ex. Collège de la Forêt"></div><div class="fr"><div class="fg"><label class="fl">Commune</label><input class="fi" id="fco" placeholder="Vire"></div><div class="fg"><label class="fl">Repas/jour</label><input class="fi" id="fm" type="number" placeholder="300"></div></div><div class="fr"><div class="fg"><label class="fl">Latitude</label><input class="fi" id="flat" type="number" step="0.001" placeholder="48.84"></div><div class="fg"><label class="fl">Longitude</label><input class="fi" id="flng" type="number" step="0.001" placeholder="-0.89"></div></div><button class="bpri" onclick="saveEnt()">Enregistrer</button>`;
+  else b=`<div class="fg"><label class="fl">Nom du point relais</label><input class="fi" id="fn" placeholder="ex. Entrepôt Bocage Nord"></div><div class="fr"><div class="fg"><label class="fl">Capacité (kg)</label><input class="fi" id="fcap" type="number" placeholder="2000"></div><div class="fg"><label class="fl">Température</label><input class="fi" id="ftmp" placeholder="0-4°C"></div></div><div class="fr"><div class="fg"><label class="fl">Latitude</label><input class="fi" id="flat" type="number" step="0.001" placeholder="48.85"></div><div class="fg"><label class="fl">Longitude</label><input class="fi" id="flng" type="number" step="0.001" placeholder="-0.90"></div></div><button class="bpri" onclick="saveEnt()">Enregistrer</button>`;
+  document.getElementById('mbdy').innerHTML=b;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function saveEnt(){
+  const name=document.getElementById('fn')?.value.trim();
+  const lat=parseFloat(document.getElementById('flat')?.value);
+  const lng=parseFloat(document.getElementById('flng')?.value);
+  if(!name||isNaN(lat)||isNaN(lng)){showToast('Remplissez le nom et les coordonnées');return}
+  const id=nextId[currentModal]++;
+  if(currentModal==='p'){state.producers.push({id,name,lat,lng,products:document.getElementById('fpr')?.value||'—',volume:parseInt(document.getElementById('fv')?.value)||0,active:true});renderProd()}
+  else if(currentModal==='c'){state.canteens.push({id,name,lat,lng,address:document.getElementById('fco')?.value||'',meals:parseInt(document.getElementById('fm')?.value)||0,active:true});renderCant()}
+  else{state.hubs.push({id,name,lat,lng,capacity:parseInt(document.getElementById('fcap')?.value)||0,temp:document.getElementById('ftmp')?.value||'0-4°C'});renderHubs()}
+  closeModal();refreshMap();showToast(`✓ ${name} ajouté(e)`);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200)}
+
+document.addEventListener('DOMContentLoaded',()=>{initMap();renderAll()});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal()});
+</script>
+</body>
+</html>
