@@ -1,5 +1,5 @@
 # Logistic-Project
-Essai de solution d'itinéraires logistiques pour l'approvisionnement des cantines scolaire de l'IVN
+Essai de solution d'itinéraires logistiques pour l'approvisionnement des cantines scolaire d'une intercom
 ⚠️ Licence & Utilisation (STRICTE)
 ❗ Droits réservés
 Ce dépôt est protégé par des droits d’auteur.
