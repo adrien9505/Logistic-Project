@@ -7,3 +7,10 @@ Just a list of new ideas to integrate into the app
 5 Ajout de la possibilité de préciser à quelle restauration collective est destiné les produits de chaque producteur, les produits peuvent être livrés à une seule restauration collective ou plusieurs
 6 Ajout de l'information du nombre de kilomètre et des émissions de GES évitées si chaque producteur étaient allé livrer chaque restauration collective qui avec commandé ses produits
 7 Ajout de la possibilité de modifier le poid des colis de chaque producteur avant de créer l'itinéraire, ce qui permet une fois l'itinéraire enregistré d'avoir dans le récapitulatif le poids total des colis livrés. Il faut pouvoir ensuite rechanger le poids lorsqu'on créer un nouvel itinéraire. Par défaut le poid de chaque producteur est fixé à 50 kilos. 
+
+Ajout ci-dessus effectué
+
+1 Ajout des itinéraire réel des producteurs vers les point de massification
+2 Supression de l'information des volumes par semaine pour les producteurs
+3 Modification de l'option "itinéraire sans point de maissification", cette option ne doit pas faire comme si ce sont les producteurs qui doivent aller livrer les restauration collectives. L'option doit prendre en compte que le lieux du producteur peut aussi être le lieu de collecte de ces denrée, et même être lui aussi un point de massification pour les autres producteurs si cela est pertinent dans la tournée de livraison
+4 Dans le calcul de la tournée de livraison, il faut veiller à prendre le trajet le plus court en temps et en kilomètre, même si cela a pour conséquence de passer deux fois par la même route, ce n'est pas un soucis.
