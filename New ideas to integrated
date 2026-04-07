@@ -6,3 +6,4 @@ Just a list of new ideas to integrate into the app
 4 Ajout de la possibilité de modifier le poids ou la quantité de produit livré par un producteur seon l'itinéraire que l'on simule
 5 Ajout de la possibilité de préciser à quelle restauration collective est destiné les produits de chaque producteur, les produits peuvent être livrés à une seule restauration collective ou plusieurs
 6 Ajout de l'information du nombre de kilomètre et des émissions de GES évitées si chaque producteur étaient allé livrer chaque restauration collective qui avec commandé ses produits
+7 Ajout de la possibilité de modifier le poid des colis de chaque producteur avant de créer l'itinéraire, ce qui permet une fois l'itinéraire enregistré d'avoir dans le récapitulatif le poids total des colis livrés. Il faut pouvoir ensuite rechanger le poids lorsqu'on créer un nouvel itinéraire. Par défaut le poid de chaque producteur est fixé à 50 kilos. 
