@@ -193,8 +193,8 @@ header{background:var(--g800);padding:0 1.5rem;height:56px;display:flex;align-it
   <div class="tpanel" id="tab-cant">
     <div class="infob">💡 Cochez les cantines à livrer lors de cette tournée.</div>
     <div class="sarow">
-      <button class="bsel" onclick="selAll('c',true)">Tout cocher</button>
-      <button class="bsel" onclick="selAll('c',false)">Tout décocher</button>
+      <button class="bsel" onclick="selAll(,true)">Tout cocher</button>
+      <button class="bsel" onclick="selAll(,false)">Tout décocher</button>
     </div>
     <div id="cant-list"></div>
     <button class="badd" onclick="openModal('c',null)">+ Ajouter une cantine</button>
@@ -203,8 +203,13 @@ header{background:var(--g800);padding:0 1.5rem;height:56px;display:flex;align-it
   <!-- Relais -->
   <div class="tpanel" id="tab-hubs">
     <div class="infob">🏭 Points de massification disponibles pour toutes les tournées.</div>
+    <div class="sarow">
+      <button class="bsel" onclick="selAll('h',true)">Tout cocher</button>
+      <button class="bsel" onclick="selAll('h',false)">Tout décocher</button>
+      </div>
     <div id="hubs-list"></div>
     <button class="badd" onclick="openModal('h',null)">+ Ajouter un point relais</button>
+    
   </div>
 
   <!-- Tournée -->
@@ -289,7 +294,7 @@ const state={
   canteens:[
     {id:1,name:"Collège Victor Hugo",        lat:48.843,lng:-0.891,meals:520,address:"Vire",active:true},
     {id:2,name:"École Primaire Ste-Marie",   lat:48.836,lng:-0.883,meals:220,address:"Vire",active:true},
-    {id:3,name:"Lycée Lebrun",               lat:48.847,lng:-0.896,meals:680,address:"Vire",active:false},
+    {id:3,name:"Lycée Lebrun",               lat:48.847,lng:-0.896,meals:680,address:"Vire",active:true},
     {id:4,name:"EHPAD Les Genêts",           lat:48.839,lng:-0.875,meals:110,address:"Vire",active:true},
     {id:5,name:"Cantine Municipale",         lat:48.832,lng:-0.902,meals:300,address:"Vire",active:true},
   ],
@@ -702,9 +707,9 @@ function renderCant(){
       <div class="cfoot">
         <span class="ms">📍 ${c.lat.toFixed(3)}, ${c.lng.toFixed(3)}</span>
         <div class="card-actions">
-          <div class="cbw" onclick="toggleA('c',${c.id})"><div class="cbx ${c.active?'chk':''}">✓</div><span class="cbl">${c.active?'Active':'Exclure'}</span></div>
-          <button class="ibtn" title="Modifier" onclick="openModal('c',${c.id})">✏️</button>
-          <button class="ibtn del" title="Supprimer" onclick="deleteEnt('c',${c.id})">🗑️</button>
+          <div class="cbw" onclick="toggleA(,${c.id})"><div class="cbx ${c.active?'chk':''}">✓</div><span class="cbl">${c.active?'Active':'Exclure'}</span></div>
+          <button class="ibtn" title="Modifier" onclick="openModal(,${c.id})">✏️</button>
+          <button class="ibtn del" title="Supprimer" onclick="deleteEnt(,${c.id})">🗑️</button>
         </div>
       </div>
     </div>`).join('')
@@ -754,7 +759,7 @@ function clearRoute(){
 function deleteEnt(t,id){
   if(!confirm('Supprimer cet élément ?'))return;
   if(t==='p'){state.producers=state.producers.filter(x=>x.id!==id);renderProd()}
-  else if(t==='c'){
+  else if(t===){
     state.canteens=state.canteens.filter(x=>x.id!==id);
     // Clean up references in producers
     state.producers.forEach(p=>{p.destCanteens=p.destCanteens.filter(cid=>cid!==id)});
@@ -783,7 +788,7 @@ function openModal(t, id){
   let entity=null;
   if(isEdit){
     if(t==='p')entity=state.producers.find(x=>x.id===id);
-    else if(t==='c')entity=state.canteens.find(x=>x.id===id);
+    else if(t===)entity=state.canteens.find(x=>x.id===id);
     else entity=state.hubs.find(x=>x.id===id);
   }
   const titles={p:isEdit?'Modifier le producteur':'Ajouter un producteur',c:isEdit?'Modifier la cantine':'Ajouter une cantine',h:isEdit?'Modifier le point relais':'Ajouter un point relais'};
@@ -810,7 +815,7 @@ function openModal(t, id){
       <div class="sdiv">🏫 Cantines destinataires (laisser vide = toutes)</div>
       <div class="chk-grid" id="dest-grid">${cChks||'<span style="font-size:11px;color:var(--mu);padding:4px">Aucune cantine encore ajoutée</span>'}</div>
       <button class="bpri" onclick="saveEnt()">Enregistrer</button>`;
-  } else if(t==='c'){
+  } else if(t===){
     b=`
       <div class="fg"><label class="fl">Nom de l'établissement</label><input class="fi" id="fn" value="${entity?entity.name:''}" placeholder="ex. Collège de la Forêt"></div>
       <div class="fr">
@@ -860,7 +865,7 @@ function saveEnt(){
       state.producers.push({id:nextId.p++,name,lat,lng,products:document.getElementById('fpr')?.value||'—',volume:parseInt(document.getElementById('fv')?.value)||0,weight,active:true,directDest:[],destCanteens});
     }
     renderProd();
-  } else if(currentModal==='c'){
+  } else if(currentModal===){
     if(isEdit){
       const c=state.canteens.find(x=>x.id===editId);
       if(c){Object.assign(c,{name,lat,lng,address:document.getElementById('fco')?.value||c.address,meals:parseInt(document.getElementById('fm')?.value)||c.meals})}
